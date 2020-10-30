@@ -9,7 +9,7 @@ library(tidyverse)
 library(readr)
 ```
 
-## R Markdown
+## ICPMS data
 
 Importing data
 ```{r, warning=FALSE, message=FALSE}
@@ -69,3 +69,27 @@ Decluttering Environment
 ```{r, warning = FALSE}
 rm(list=setdiff(ls(),"ICPMS_merged"))
 ```
+
+
+## FAAS (flame atomic absorption spectroscopy) data
+
+Importing data
+```{r, warning=FALSE, message=FALSE}
+AA_imported <- read_csv("~/CHEM313_L4_SoilLab/data/AA_Data.csv", col_types = cols(`%RSD` = col_number()), skip = 4, na = "N/A") %>% rename(Sample.Key = "Sample Key")
+
+sample_key <- read.csv("~/CHEM313_L4_SoilLab/data/Sample_Key.csv", skip=0)
+```
+
+Tidying data
+```{r}
+AA_merged <- merge(AA_imported, sample_key)
+
+AA_merged
+```
+
+Decluttering Environment
+```{r, warning = FALSE}
+rm(list= ls()[!(ls() %in% c("ICPMS_merged","AA_merged"))])
+```
+
+
