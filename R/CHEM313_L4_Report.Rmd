@@ -11,20 +11,61 @@ library(readr)
 
 ## R Markdown
 
-This is an R Markdown document. Markdown is a simple formatting syntax for authoring HTML, PDF, and MS Word documents. For more details on using R Markdown see <http://rmarkdown.rstudio.com>.
+Importing data
+```{r, warning=FALSE, message=FALSE}
 
-When you click the **Knit** button a document will be generated that includes both content as well as the output of any embedded R code chunks within the document. You can embed an R code chunk like this:
+ICPMS_imported <- read.csv("~/CHEM313_L4_SoilLab/data/ICPMS_Data.csv",
+                         skip=1,
+                         na="N/A")
+sample_key <- read.csv("~/CHEM313_L4_SoilLab/data/Sample_Key.csv", skip=0)
 
-```{r cars}
-summary(cars)
+ICPMS_imported
+sample_key
+
 ```
 
-## Including Plots
 
-You can also embed plots, for example:
+Tidying Data
+```{r}
 
-```{r pressure, echo=FALSE}
-plot(pressure)
+RSD_data <- ICPMS_imported %>% 
+  select(Cr52 = CPS.RSD,
+         Cr53 = CPS.RSD.1,
+         As75 = CPS.RSD.2,
+         Cd111 = CPS.RSD.3,
+         Cd114 = CPS.RSD.4,
+         Pb208 = CPS.RSD.5,
+         Ge_RSD = CPS.RSD.7,
+         Sample.Key) %>% 
+  pivot_longer(cols = 1:6, names_to = "Metal", values_to = "RSD")
+
+ICPMS_tidy <- ICPMS_imported %>% 
+  select(Cr52 = CPS,
+         Cr53 = CPS.1,
+         As75 = CPS.2,
+         Cd111 = CPS.3,
+         Cd114 = CPS.4,
+         Pb208 = CPS.5,
+         Ge72 = CPS.7,
+         Sample.Key) %>%
+  pivot_longer(1:6, names_to = "Metal", values_to = "CPS") %>%
+  mutate(RSD = RSD_data$RSD/RSD_data$Ge_RSD,
+         CPS=CPS/Ge72) %>%
+  select(-Ge72)
+
+ICPMS_tidy
+
+all(RSD_data$Sample.Key==ICPMS_tidy$Sample.Key, RSD_data$Metal==ICPMS_tidy$Metal)
 ```
 
-Note that the `echo = FALSE` parameter was added to the code chunk to prevent printing of the R code that generated the plot.
+Merging Tidy data with Sample Key
+```{r}
+ICPMS_merged <- merge(ICPMS_tidy, sample_key)
+
+ICPMS_merged
+```
+
+Decluttering Environment
+```{r, warning = FALSE}
+rm(list=setdiff(ls(),"ICPMS_merged"))
+```
