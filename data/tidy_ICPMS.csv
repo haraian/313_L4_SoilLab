@@ -1,4 +1,4 @@
-"","Sample.Key","Metal","CPS","RSD","Type","Site","Analyst","Mass.of.Soil","Total.Volume","Concentration"
+"","sample_key","metal","cps","rsd","type","site","analyst","mass_of_soil","total_volume","concentration"
 "1","10","Cr53",0.0360836745943431,0.270455082534076,"Sample","F","CYT",1.4935,46,NA
 "2","10","Pb208",0.559189528780998,0.460066460915433,"Sample","F","CYT",1.4935,46,NA
 "3","10","As75",0.0127343981672634,0.0389116448299085,"Sample","F","CYT",1.4935,46,NA

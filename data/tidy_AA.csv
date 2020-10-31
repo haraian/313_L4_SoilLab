@@ -1,4 +1,4 @@
-"","Sample.Key","Mean Abs.","%RSD","Type","Site","Analyst","Mass.of.Soil","Total.Volume","Concentration"
+"","sample_key","mean_abs","percent_rsd","type","site","analyst","mass_of_soil","total_volume","concentration"
 "1","1",4e-04,NA,"CalStd","","",NA,NA,0.1
 "2","10",-6e-04,NA,"Sample","F","CYT",1.4935,46,NA
 "3","11",-0.0017,5.71,"Sample","MB","CYT",0,46,NA

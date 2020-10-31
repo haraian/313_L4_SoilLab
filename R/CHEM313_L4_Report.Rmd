@@ -4,7 +4,6 @@ output: html_document
 ---
 
 ```{r setup, include=FALSE}
-knitr::opts_chunk$set(echo = TRUE)
 library(tidyverse)
 library(readr)
 library(janitor)
@@ -19,10 +18,6 @@ ICPMS_imported <- read.csv("~/CHEM313_L4_SoilLab/data/ICPMS_Data.csv",
                          skip=1,
                          na="N/A")
 sample_key <- read.csv("~/CHEM313_L4_SoilLab/data/Sample_Key.csv", skip=0)
-
-ICPMS_imported
-sample_key
-
 ```
 
 
@@ -54,22 +49,19 @@ ICPMS_tidy <- ICPMS_imported %>%
          CPS=CPS/Ge72) %>%
   select(-Ge72)
 
-ICPMS_tidy
-
 all(RSD_data$Sample.Key==ICPMS_tidy$Sample.Key, RSD_data$Metal==ICPMS_tidy$Metal)
 ```
 
 Merging Tidy data with Sample Key
 ```{r}
 ICPMS_merged <- merge(ICPMS_tidy, sample_key)
-
-ICPMS_merged
 ```
 
 ## FAAS (flame atomic absorption spectroscopy) data
 
 Importing data
 ```{r, warning=FALSE, message=FALSE}
+
 AA_imported <- read_csv("~/CHEM313_L4_SoilLab/data/AA_Data.csv", col_types = cols(`%RSD` = col_number()), skip = 4, na = "N/A") %>% rename(Sample.Key = "Sample Key")
 
 sample_key <- read.csv("~/CHEM313_L4_SoilLab/data/Sample_Key.csv", skip=0)
@@ -78,8 +70,6 @@ sample_key <- read.csv("~/CHEM313_L4_SoilLab/data/Sample_Key.csv", skip=0)
 Merging data
 ```{r}
 AA_merged <- merge(AA_imported, sample_key)
-
-AA_merged
 ```
 
 Decluttering Environment
