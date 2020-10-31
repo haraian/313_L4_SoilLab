@@ -7,6 +7,7 @@ output: html_document
 knitr::opts_chunk$set(echo = TRUE)
 library(tidyverse)
 library(readr)
+library(janitor)
 ```
 
 ## ICPMS data
@@ -65,12 +66,6 @@ ICPMS_merged <- merge(ICPMS_tidy, sample_key)
 ICPMS_merged
 ```
 
-Decluttering Environment
-```{r, warning = FALSE}
-rm(list=setdiff(ls(),"ICPMS_merged"))
-```
-
-
 ## FAAS (flame atomic absorption spectroscopy) data
 
 Importing data
@@ -80,7 +75,7 @@ AA_imported <- read_csv("~/CHEM313_L4_SoilLab/data/AA_Data.csv", col_types = col
 sample_key <- read.csv("~/CHEM313_L4_SoilLab/data/Sample_Key.csv", skip=0)
 ```
 
-Tidying data
+Merging data
 ```{r}
 AA_merged <- merge(AA_imported, sample_key)
 
@@ -90,6 +85,13 @@ AA_merged
 Decluttering Environment
 ```{r, warning = FALSE}
 rm(list= ls()[!(ls() %in% c("ICPMS_merged","AA_merged"))])
+clean_names(AA_merged, "snake")
+clean_names(ICPMS_merged, "snake")
 ```
 
+Save as csv file
+```{r}
+write.csv(ICPMS_merged, file = "~/CHEM313_L4_SoilLab/data/tidy_ICPMS.csv")
+write.csv(AA_merged, file = "~/CHEM313_L4_SoilLab/data/tidy_AA.csv")
+```
 
