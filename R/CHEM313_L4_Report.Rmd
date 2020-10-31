@@ -74,14 +74,14 @@ AA_merged <- merge(AA_imported, sample_key)
 
 Decluttering Environment
 ```{r, warning = FALSE}
-rm(list= ls()[!(ls() %in% c("ICPMS_merged","AA_merged"))])
-clean_names(AA_merged, "snake")
-clean_names(ICPMS_merged, "snake")
+AA_tidy <- clean_names(AA_merged, "snake")
+ICPMS_tidy <- clean_names(ICPMS_merged, "snake")
+rm(list= ls()[!(ls() %in% c("ICPMS_tidy","AA_tidy"))])
 ```
 
 Save as csv file
 ```{r}
-write.csv(ICPMS_merged, file = "~/CHEM313_L4_SoilLab/data/tidy_ICPMS.csv")
-write.csv(AA_merged, file = "~/CHEM313_L4_SoilLab/data/tidy_AA.csv")
+write.csv(ICPMS_tidy, file = "~/CHEM313_L4_SoilLab/data/tidy_ICPMS.csv")
+write.csv(AA_tidy, file = "~/CHEM313_L4_SoilLab/data/tidy_AA.csv")
 ```
 
