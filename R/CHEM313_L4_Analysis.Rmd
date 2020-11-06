@@ -126,4 +126,21 @@ uncor_sample <- run_sites(sample_analysis) #values do no account for dilutions (
 MB
 uncor_sample
 ```
+correcting for method blank
+```{r}
+sample_data_mb <- NULL
+
+for (unique_metal in metals_analyzed) {
+  MB_metal <- filter(MB, metal == unique_metal)
+  sample_metal <- filter(uncor_sample, metal == unique_metal)
+  conc_dil_blanked <- sample_metal$conc_dil - MB_metal$conc_dil
+  #error propagation: subtraction of MB
+  conc_dil_blanked_error <- sqrt((sample_metal$conc_dil_error)^2 + (MB_metal$conc_dil_error)^2)
+  sample_data_mb <- sample_metal %>%
+    mutate(conc_dil_blanked, conc_dil_blanked_error) %>%
+    rbind(sample_data_mb)
+}
+
+sample_data_mb
+```
 
