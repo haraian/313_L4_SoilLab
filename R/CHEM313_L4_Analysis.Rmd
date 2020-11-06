@@ -1,0 +1,17 @@
+---
+title: 'SOIL LAB DATA ANALYSIS'
+output: html_document
+---
+
+```{r setup, include=FALSE}
+library(readr)
+library(tidyverse)
+```
+
+
+
+```{r}
+ICPMS <- read.csv("~/CHEM313_L4_SoilLab/data/tidy_ICPMS.csv")
+ICPMS
+```
+
