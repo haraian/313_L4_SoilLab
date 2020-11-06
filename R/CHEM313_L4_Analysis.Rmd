@@ -7,11 +7,48 @@ output: html_document
 library(readr)
 library(tidyverse)
 ```
-
-
-
+loading data
 ```{r}
 ICPMS <- read.csv("~/CHEM313_L4_SoilLab/data/tidy_ICPMS.csv")
 ICPMS
+```
+defining lists
+```{r}
+sample_sites <- unique(filter(ICPMS, site!="MB", site!="")$site) #exclude method blank and quality control from list of sites
+sample_sites
+metals_analyzed <- unique(ICPMS$metal)
+metals_analyzed
+```
+using loops to create a calibration curve for each metal
+```{r}
+#forloop with filtered out calibration data
+ICPMS_cal <- NULL
+for (unique_metal in metals_analyzed) {
+  cal <- ICPMS %>%
+    filter(type == "Cal1" | type == "Cal2" | type == "Cal3") %>%
+    filter(metal == unique_metal) %>%
+    select(concentration, cps, rsd) 
+  #performing linear regression
+  w <- 1/(cal$cps*cal$rsd)^2
+  model <- lm(cal$cps ~ cal$concentration, weights = w)
+  
+  slope <- model$coefficients[2]
+  intercept <- model$coefficients[1]
+  slope_std <- summary(model)$coefficients[2,2]
+  intercept_std <- summary(model)$coefficients[1,2]
+  
+  plot(cal$cps ~ cal$conc,
+       xlab = paste("Concentration of", unique_metal, "(ppb)"),
+       ylab = "Counts per second") +
+    abline(model, col="blue") +
+    title(paste("Calibration for", unique_metal))
+  
+  equation <- data_frame(metal = unique_metal, slope, slope_std, intercept, intercept_std)
+  ICPMS_cal <- rbind(ICPMS_cal, equation)
+}
+
+ICPMS_cal
+#clean up
+rm(equation, cal, slope, slope_std, intercept, intercept_std, w, model, unique_metal)
 ```
 
