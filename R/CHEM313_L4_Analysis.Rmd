@@ -7,17 +7,17 @@ output: html_document
 library(readr)
 library(tidyverse)
 ```
+
+##ICPMS ANALYSIS
+
 loading data
 ```{r}
 ICPMS <- read.csv("~/CHEM313_L4_SoilLab/data/tidy_ICPMS.csv")
-ICPMS
 ```
 defining lists
 ```{r}
 sample_sites <- unique(filter(ICPMS, site!="MB", site!="")$site) #exclude method blank and quality control from list of sites
-sample_sites
 metals_analyzed <- unique(ICPMS$metal)
-metals_analyzed
 ```
 using loops to create a calibration curve for each metal
 ```{r}
@@ -198,5 +198,16 @@ sample_data <- merge(ICPMS, sample_data_mb) %>%
 sample_data
 
 rm(list = ls()[!ls() %in% c("ICPMS", "sample_data")])
+```
+
+##AA analysis
+
+loading data
+```{r}
+AA <- read.csv("~/CHEM313_L4_SoilLab/data/tidy_AA.csv")
+```
+defining lists
+```{r}
+sample_sites <- unique(filter(AA, site!="MB", site!="")$site)
 ```
 
