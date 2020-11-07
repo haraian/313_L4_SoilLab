@@ -145,7 +145,23 @@ sample_data_mb
 ```
 #Sample Preparation
 
-to be added
+1) mass_soil weighed on analytical balance (unc = ±.001 g)
+
+2) mass_soil dried in 55˚C oven for 1 week
+
+3) mass_soil ground with mortar and pestle
+
+4) mass_soil quantitatively transferred to acid washed teflon breaker
+
+5) mass_soil digested with ~10 mL MQ water, 3 mL nitric acid, 2 mL hydrochloric acid and heated until steaming for 30 minutes
+
+6) Acid digestion solution quantitively transferred to falcon tube and diluted to total_volume, measured with fill line
+
+7) Falcon tube centrifuged for 10 minutes at 1500 rpm
+
+8) 10 mL of sample transferred to metals-free 15 mL tube and taken to OHSU for ICPMS analysis (stored in fridge prior to transport)
+
+9) 10 uL (unc = ± 1 uL) of solution micro-pipetted into 1000 uL of MQ water by lab assistant at OHSU
 
 error propagation and correcting dilutions
 ```{r}
