@@ -1,5 +1,5 @@
 ---
-title: 'SOIL LAB DATA ANALYSIS'
+title: 'SOIL LAB DATA ICPMS ANALYSIS'
 output: html_document
 ---
 
@@ -72,7 +72,7 @@ sample_analysis <- function(unique_site) {
       b_e <- cal$intercept_std
       m_e <- cal$slope_std
       x <- (y-b)/m
-      RSD <- sample_data$rsd
+      RSD <- (sample_data$rsd/100)*sample_data$cps
       CPS <- sample_data$cps
       #error propagation
       e_yb <- sqrt((RSD)^2 + (b_e)^2) #error in y-b in calibration
@@ -199,47 +199,3 @@ sample_data
 
 rm(list = ls()[!ls() %in% c("ICPMS", "sample_data")])
 ```
-
-##AA analysis
-
-loading data
-```{r}
-AA <- read.csv("~/CHEM313_L4_SoilLab/data/tidy_AA.csv")
-```
-defining lists
-```{r}
-sample_sites <- unique(filter(AA, site!="MB", site!="")$site)
-```
-making cal curve
-```{r}
-cal <- AA %>%
-  filter(type == "CalStd" | type == "CalStd2" | type == "CalStd4") %>%
-  select(concentration, mean_abs, percent_rsd)
-  
-model <- lm(cal$mean_abs ~ cal$concentration)
-slope <- model$coefficients[2]
-intercept <- model$coefficients[1]
-slope_std <- summary(model)$coefficients[2,2]
-intercept_std <- summary(model)$coefficients[1,2]
-  
-plot(cal$mean_abs ~ cal$concentration,
-     xlab = "Concentration of Cr (ppb)",
-     ylab = "Absorbance") +
-  abline(model, col="blue") +
-  title("Calibration for Cr")
-
-AA_cal <- data_frame(slope, slope_std, intercept, intercept_std)
-AA_cal
-#clean up
-rm(cal, slope, slope_std, intercept, intercept_std, model)
-```
-analyze specific samples
-```{r}
-
-```
-
-
-
-goals of analysis
-field study look at metals at different sites (compare means?)
-instrumentation compare how ICPMS and AA differ
