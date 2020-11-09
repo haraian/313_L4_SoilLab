@@ -59,7 +59,6 @@ ABS <- AA_sample$mean_abs
 e_yb <- sqrt((RSD)^2 + (b_e)^2) #error in y-b in calibration
 yb <- ABS-b
 e_x <- x*sqrt((e_yb/yb)^2+(m_e/m)^2) #error in x from calibration
-#storing concentration data for sites that are NOT method blanks
 
 AA_concentration_data <- tibble(sample_key = AA_sample$sample_key,
                                          analyst = AA_sample$analyst,
@@ -68,5 +67,24 @@ AA_concentration_data <- tibble(sample_key = AA_sample$sample_key,
                                          conc_dil_error = e_x)
 
 AA_concentration_data
+```
+
+method blank
+```{r}
+MB <- filter(AA_concentration_data, site == "MB")
+MB_conc <- mean(MB$conc_dil)
+MB_conc_error <- sd(MB$conc_dil)
+```
+
+adjusting data for method blank
+```{r}
+AA_forblank <- filter(AA_concentration_data, site != "MB")
+conc_blanked <- AA_forblank$conc_dil - MB_conc
+conc_blanked_error <- sqrt((AA_forblank$conc_dil_error)^2 + (MB_conc_error)^2)
+AA_blank <- AA_forblank %>% mutate(conc_blanked, conc_blanked_error)
+
+AA_blank
+
+rm(list = ls()[!ls() %in% c("AA", "AA_blank", "AA_cal")])
 ```
 
