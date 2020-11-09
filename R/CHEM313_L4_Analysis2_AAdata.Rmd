@@ -43,3 +43,30 @@ AA_cal
 #clean up
 rm(cal, slope, slope_std, intercept, intercept_std, model)
 ```
+
+fitting samples to cal curve
+```{r}
+AA_sample <- filter(AA, site != "")
+m <- AA_cal$slope
+b <- AA_cal$intercept
+y <- AA_sample$mean_abs
+b_e <- AA_cal$intercept_std
+m_e <- AA_cal$slope_std
+x <- (y-b)/m
+RSD <- AA_sample$percent_rsd/100
+ABS <- AA_sample$mean_abs
+#error propagation
+e_yb <- sqrt((RSD)^2 + (b_e)^2) #error in y-b in calibration
+yb <- ABS-b
+e_x <- x*sqrt((e_yb/yb)^2+(m_e/m)^2) #error in x from calibration
+#storing concentration data for sites that are NOT method blanks
+
+AA_concentration_data <- tibble(sample_key = AA_sample$sample_key,
+                                         analyst = AA_sample$analyst,
+                                         site = AA_sample$site,
+                                         conc_dil = x,
+                                         conc_dil_error = e_x)
+
+AA_concentration_data
+```
+
