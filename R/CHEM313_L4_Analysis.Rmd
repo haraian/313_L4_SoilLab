@@ -198,4 +198,6 @@ sample_data <- merge(ICPMS, sample_data_mb) %>%
 sample_data
 
 rm(list = ls()[!ls() %in% c("ICPMS", "sample_data")])
+
+write_csv(sample_data, "ICPMS_corrected.csv")
 ```
