@@ -63,7 +63,7 @@ QC_comp2 <- tibble(metal = QC_comp$metal, site = QC_comp$site, control_conc = QC
 QC_comp2
 ```
 
-ICPMS and AA data agreement
+ICPMS and AA data agreement (f and t test)
 ```{r}
 
 Ftest <- function(unique_site) {
@@ -104,6 +104,46 @@ Ftable
 CrFtest2 <- CrFtest %>% mutate(site = x) %>% mutate(df = degf) %>% mutate(ftb = y)
 
 CrFtest2
+
+Cr_all <- merge(AA_Cr2, ICPMS_Cr) %>% subset(select = -c(metal))
+Cr_all
+
+ttest <- function(unique_site) {
+  sample <- filter(Cr_all, site == unique_site)
+    data <- NULL
+    v1 <- sample$conc_blanked
+    v2 <- sample$conc_blanked_ppm
+    t <- t.test(v1, v2, mu=0, paired=TRUE, var.equal=FALSE)
+    data <- t
+  return(data)
+}
+
+ttest("A") #-1.9481 df=3 ttb=3.182
+ttest("B") #-2.2307 df=4 ttb=2.776
+ttest("C") #-4.3031 df=4 ttb=2.776 significant
+ttest("D") #-7.7403 df=2 ttb=4.303 significant
+ttest("E") #-4.8498 df=1 ttb=12.71
+ttest("F") #-2.6169 df=2 ttb=4.303
+ttest("QC") #-4.8622 df=11 ttb=2.201 significant
+
+Ftestver2 <- function(unique_site) {
+  sample <- filter(Cr_all, site == unique_site)
+    data <- NULL
+    v1 <- sample$conc_blanked
+    v2 <- sample$conc_blanked_ppm
+    f <- var.test(v1, v2)
+    data <- f
+  return(data)
+}
+
+Ftestver2("A") #0.95274 df=3,3 Ftb=9.28
+Ftestver2("B") #0.95213 df=4,4 Ftb=6.39
+Ftestver2("C") #0.6121 df=4,4 Ftb=6.39
+Ftestver2("D") #0.70617 df=2,2
+Ftestver2("E") #0.63252 df=1,1
+Ftestver2("F") #0.41288 df=2,2
+Ftestver2("QC") #0.74982 df=11,11 Ftb=2.69
+#gives out different values than Ftestver1, however all results remain in favor of the null and the ttests still remian paired
 ```
 
 
