@@ -6,5 +6,67 @@ output: html_document
 ```{r setup, include=FALSE}
 library(dplyr)
 library(readr)
+library(stats)
 ```
+
+reading files, mutations and filtering
+```{r}
+AA_Cr <- read_csv("~/CHEM313_L4_SoilLab/data/AA_corrected.csv")
+ICPMS <- read_csv("~/CHEM313_L4_SoilLab/data/ICPMS_corrected.csv")
+
+ICPMS_ppm <- ICPMS %>% mutate(conc_blanked_ppm = conc_blanked*10^-3) %>% 
+  mutate(conc_blanked_error_ppm = conc_blanked_error*10^-3) %>% 
+  subset(select = -c(X, conc_blanked, conc_blanked_error, conc_unblanked, conc_unblanked_error))
+ICPMS_Cr <- filter(ICPMS_ppm, metal == "Cr52")
+AA_Cr2 <- subset(AA_Cr, select = -c(conc_unblanked, conc_unblanked_error))
+```
+
+comparing ICPMS and AA Cr concentrations
+```{r}
+Cr_comp <- merge(ICPMS_Cr, AA_Cr2)
+
+Cr_comp
+
+Cr_site_avg <- group_by(Cr_comp, site) %>%
+  summarize(ICPMSavg = mean(conc_blanked_ppm), ICPMSsd = sd(conc_blanked_error_ppm), 
+            length1 = length(conc_blanked_ppm), 
+            ICPMS_95CI = qnorm(0.975)*ICPMSsd/sqrt(length1),
+            AAavg = mean(conc_blanked), AAsd = sd(conc_blanked_error),
+            length2 = length(conc_blanked), AA_95CI = qnorm(0.975)*AAsd/sqrt(length2)) %>% 
+  subset(select = -c(length1, length2))
+  
+Cr_site_avg
+```
+finding average metal concentrations
+```{r}
+ICPMS_avg <- ICPMS_ppm %>% group_by(metal) %>% group_by(site, add = TRUE) %>%
+  summarize(avg = mean(conc_blanked_ppm), sd = sd(conc_blanked_error_ppm), 
+            length1 = length(conc_blanked_ppm), 
+            "95CI" = qnorm(0.975)*sd/sqrt(length1)) %>% 
+  subset(select = -c(length1))
+
+ICPMS_avg
+```
+
+making QC data set and QC comparisons
+```{r}
+metal <- c("As75", "Cd114", "Cr52", "Pb208")
+conc <- c("", 2.94, 121.9, 150)
+conc_e <- c("", 0.29, 3.8, 17)
+NIST <- tibble(metal, conc, conc_e)
+
+ICPMS_QC <- filter(ICPMS_avg, site == "QC")
+
+QC_comp <- merge(NIST, ICPMS_QC)
+QC_comp2 <- tibble(metal = QC_comp$metal, site = QC_comp$site, control_conc = QC_comp$conc, control_conc_e = QC_comp$conc_e, ICPMS_conc = QC_comp$avg, ICPMS_conc_e = QC_comp$sd, ICPMS_95CI = QC_comp$"95CI")
+
+QC_comp2
+```
+
+ICPMS and AA data agreement
+```{r}
+
+```
+
+
 
