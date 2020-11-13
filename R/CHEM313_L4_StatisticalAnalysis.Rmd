@@ -66,6 +66,44 @@ QC_comp2
 ICPMS and AA data agreement
 ```{r}
 
+Ftest <- function(unique_site) {
+  sample <- filter(Cr_site_avg, site == unique_site)
+    data <- NULL
+    v1 <- sample$ICPMSsd
+    v2 <- sample$AAsd
+    f <- (v1^2)/(v2^2)
+    data <- rbind(data, data_frame(f))
+  return(data)
+}
+
+sitelist <- list(unique(Cr_site_avg$site)) 
+
+run_sites <- function(Function){
+  value <- NULL
+  for (site in sitelist) {
+    site_Fvalue <- Function(site)
+    value <- rbind(site_Fvalue, value)
+  }
+  return(value)
+}
+
+CrFtest <- run_sites(Ftest)
+write_csv(CrFtest, "CrFtest.csv")
+
+#degrees of freedom for sites
+site_lengths <- group_by(Cr_comp, site) %>% summarise(length1 = length(conc_blanked_ppm), length2 = length(conc_blanked))
+site_lengths
+
+#Ftable data frame
+x <- c("A", "B", "C", "D", "E", "F", "QC")
+degf <- c(4-1, 5-1, 5-1, 3-1, 2-1, 3-1, 12-1)
+y <- c(9.28, 6.39, 6.39, 19.0, 161.4, 19.0, 2.69) #Ftable values
+Ftable <- tibble(site = x, degf, ftb = y)
+Ftable
+
+CrFtest2 <- CrFtest %>% mutate(site = x) %>% mutate(df = degf) %>% mutate(ftb = y)
+
+CrFtest2
 ```
 
 
