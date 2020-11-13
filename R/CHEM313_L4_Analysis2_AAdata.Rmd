@@ -124,4 +124,7 @@ AA_corrected <- merge(AA, AA_blank) %>%
          -conc_dil_error)
 
 AA_corrected
+
+rm(list = ls()[!ls() %in% c("AA", "AA_corrected")])
+write_csv(AA_corrected, "AA_corrected.csv")
 ```
