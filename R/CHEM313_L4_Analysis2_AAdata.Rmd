@@ -74,6 +74,9 @@ method blank
 MB <- filter(AA_concentration_data, site == "MB")
 MB_conc <- mean(MB$conc_dil)
 MB_conc_error <- sd(MB$conc_dil)
+
+MB
+MB_conc_error
 ```
 
 adjusting data for method blank
@@ -84,8 +87,6 @@ conc_dil_blanked_error <- sqrt((AA_forblank$conc_dil_error)^2 + (MB_conc_error)^
 AA_blank <- AA_forblank %>% mutate(conc_dil_blanked, conc_dil_blanked_error)
 
 AA_blank
-
-rm(list = ls()[!ls() %in% c("AA", "AA_blank", "AA_cal")])
 ```
 
 dilution correction and error propagation
@@ -125,6 +126,14 @@ AA_corrected <- merge(AA, AA_blank) %>%
 
 AA_corrected
 
-rm(list = ls()[!ls() %in% c("AA", "AA_corrected")])
-write_csv(AA_corrected, "AA_corrected.csv")
+rm(list = ls()[!ls() %in% c("AA", "AA_blank", "AA_cal", "AA_corrected", "MB")])
+```
+
+DETECTION/QUANTIFICATION LIMIT OF FAAS
+```{r}
+lod <- 3*sd(MB$conc_dil)/AA_cal$slope
+lod
+
+qod <- 10*sd(MB$conc_dil)/AA_cal$slope
+qod
 ```
