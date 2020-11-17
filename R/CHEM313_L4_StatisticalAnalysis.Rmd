@@ -1,6 +1,8 @@
 ---
 title: "Soil Lab Statistical Analysis"
-output: html_document
+output:
+  pdf_document: default
+  html_document: default
 ---
 
 ```{r setup, include=FALSE}
@@ -17,6 +19,9 @@ ICPMS <- read_csv("~/CHEM313_L4_SoilLab/data/ICPMS_corrected.csv")
 ICPMS_ppm <- ICPMS %>% mutate(conc_blanked_ppm = conc_blanked*10^-3) %>% 
   mutate(conc_blanked_error_ppm = conc_blanked_error*10^-3) %>% 
   subset(select = -c(X, conc_blanked, conc_blanked_error, conc_unblanked, conc_unblanked_error))
+
+ICPMS_ppm
+
 ICPMS_Cr <- filter(ICPMS_ppm, metal == "Cr52")
 AA_Cr2 <- subset(AA_Cr, select = -c(conc_unblanked, conc_unblanked_error))
 ```
@@ -25,9 +30,7 @@ comparing ICPMS and AA Cr concentrations
 ```{r}
 Cr_comp <- merge(ICPMS_Cr, AA_Cr2)
 
-Cr_comp
-
-Cr_site_avg <- group_by(Cr_comp, site) %>%
+Cr_site_avg <- Cr_comp %>% group_by(site) %>%
   summarize(ICPMSavg = mean(conc_blanked_ppm), ICPMSsd = sd(conc_blanked_error_ppm), 
             length1 = length(conc_blanked_ppm), 
             ICPMS_95CI = qnorm(0.975)*ICPMSsd/sqrt(length1),
@@ -50,17 +53,19 @@ ICPMS_avg
 
 making QC data set and QC comparisons
 ```{r}
-metal <- c("As75", "Cd114", "Cr52", "Pb208")
-conc <- c("", 2.94, 121.9, 150)
-conc_e <- c("", 0.29, 3.8, 17)
+metal <- c("Cd114", "Cr52", "Pb208")
+conc <- c(2.94, 121.9, 150)
+conc_e <- c(0.29, 3.8, 17)
 NIST <- tibble(metal, conc, conc_e)
 
-ICPMS_QC <- filter(ICPMS_avg, site == "QC")
+ICPMS_QC <- filter(ICPMS_avg, site == "QC", metal != "As75")
 
 QC_comp <- merge(NIST, ICPMS_QC)
 QC_comp2 <- tibble(metal = QC_comp$metal, site = QC_comp$site, control_conc = QC_comp$conc, control_conc_e = QC_comp$conc_e, ICPMS_conc = QC_comp$avg, ICPMS_conc_e = QC_comp$sd, ICPMS_95CI = QC_comp$"95CI")
 
-QC_comp2
+QC_comp3 <- QC_comp2 %>% mutate(difference = abs(control_conc - ICPMS_conc)) %>% mutate(perc_error = 100*abs(difference)/control_conc)
+
+QC_comp3
 ```
 
 ICPMS and AA data agreement (f and t test)
@@ -88,7 +93,6 @@ run_sites <- function(Function){
 }
 
 CrFtest <- run_sites(Ftest)
-write_csv(CrFtest, "CrFtest.csv")
 
 #degrees of freedom for sites
 site_lengths <- group_by(Cr_comp, site) %>% summarise(length1 = length(conc_blanked_ppm), length2 = length(conc_blanked))
@@ -99,14 +103,10 @@ x <- c("A", "B", "C", "D", "E", "F", "QC")
 degf <- c(4-1, 5-1, 5-1, 3-1, 2-1, 3-1, 12-1)
 y <- c(9.28, 6.39, 6.39, 19.0, 161.4, 19.0, 2.69) #Ftable values
 Ftable <- tibble(site = x, degf, ftb = y)
-Ftable
 
 CrFtest2 <- CrFtest %>% mutate(site = x) %>% mutate(df = degf) %>% mutate(ftb = y)
 
-CrFtest2
-
 Cr_all <- merge(AA_Cr2, ICPMS_Cr) %>% subset(select = -c(metal))
-Cr_all
 
 ttest <- function(unique_site) {
   sample <- filter(Cr_all, site == unique_site)
@@ -125,6 +125,13 @@ ttest("D") #-7.7403 df=2 ttb=4.303 significant
 ttest("E") #-4.8498 df=1 ttb=12.71
 ttest("F") #-2.6169 df=2 ttb=4.303
 ttest("QC") #-4.8622 df=11 ttb=2.201 significant
+
+t <- c(1.9841, 2.2307, 4.3031, 7.7403, 4.8498, 2.6169, 4.8622)
+ttb <- c(3.182, 2.776, 2.776, 4.303, 12.71, 4.303, 2.201)
+
+CrFandt <- tibble(site = CrFtest2$site, df = CrFtest2$df, f_value = CrFtest2$f, f_table = CrFtest2$ftb, t_value = t, t_table = ttb)
+
+CrFandt
 
 Ftestver2 <- function(unique_site) {
   sample <- filter(Cr_all, site == unique_site)
@@ -145,6 +152,3 @@ Ftestver2("F") #0.41288 df=2,2
 Ftestver2("QC") #0.74982 df=11,11 Ftb=2.69
 #gives out different values than Ftestver1, however all results remain in favor of the null and the ttests still remian paired
 ```
-
-
-
