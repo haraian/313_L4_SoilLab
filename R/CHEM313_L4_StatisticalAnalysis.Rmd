@@ -1,6 +1,7 @@
 ---
 title: "Soil Lab Statistical Analysis"
 output:
+  word_document: default
   pdf_document: default
   html_document: default
 ---
@@ -168,8 +169,9 @@ Ftestver2 <- function(unique_site) {
 Graphs
 ```{r}
 library(ggplot2)
+library(tidyr)
 ICPMS_forgraph <- ICPMS_avg %>% filter(site != "QC", metal != "Cr53", 
-                                       metal != "Cd111")#, metal != "Pb208")
+                                       metal != "Cd111", metal != "Pb208")
 gg1 <- ggplot(ICPMS_forgraph, 
               aes(x = site, y = avg, color = metal, group = metal)) + 
   geom_errorbar(aes(x=site, y=avg, ymin=avg-sd, ymax=avg+sd), 

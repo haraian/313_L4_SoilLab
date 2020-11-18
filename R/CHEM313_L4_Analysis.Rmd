@@ -1,6 +1,8 @@
 ---
-title: 'SOIL LAB DATA ICPMS ANALYSIS'
-output: html_document
+title: "SOIL LAB DATA ICPMS ANALYSIS"
+output:
+  word_document: default
+  html_document: default
 ---
 
 ```{r setup, include=FALSE}

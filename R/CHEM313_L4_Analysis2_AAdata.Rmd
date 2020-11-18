@@ -1,6 +1,8 @@
 ---
-title: 'L4 AA Analysis'
-output: html_document
+title: "L4 AA Analysis"
+output:
+  word_document: default
+  html_document: default
 ---
 
 ```{r setup, include=FALSE}
