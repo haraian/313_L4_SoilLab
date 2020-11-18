@@ -50,6 +50,7 @@ for (unique_metal in metals_analyzed) {
 ICPMS_cal
 #clean up
 rm(equation, cal, slope, slope_std, intercept, intercept_std, w, model, unique_metal)
+write.csv(ICPMS_cal, file = "ICPMScalcurve.csv", row.names = FALSE)
 ```
 function to analyze samples with comments for inputs and outputs
 ```{r}
@@ -175,10 +176,11 @@ dil_e <- sqrt((dil_1010_e/1010)^2+(1/10)^2)
 sample_data <- merge(ICPMS, sample_data_mb) %>%
   unique() %>%
   mutate(conc_blanked = conc_dil_blanked*(total_volume/1000)/(mass_of_soil/1000)*101, #101 is factor of dilution
-    conc_blanked_error = conc_blanked*sqrt((conc_dil_blanked_error/conc_dil_blanked)^2+
-                                            (dil_e/101)^2 +
-                                            (mass_e/mass_of_soil)^2 +
-                                            (vol_e/total_volume)^2),
+    conc_blanked_error = 
+      conc_blanked*sqrt((conc_dil_blanked_error/conc_dil_blanked)^2+
+                          (dil_e/101)^2 +
+                          (mass_e/mass_of_soil)^2 +
+                          (vol_e/total_volume)^2),
     conc_unblanked = conc_dil*(total_volume/1000)/(mass_of_soil/1000)*101,
     conc_unblanked_error = conc_unblanked*sqrt((conc_dil_error/conc_dil)^2 +
                                                 (dil_e/101)^2 +
