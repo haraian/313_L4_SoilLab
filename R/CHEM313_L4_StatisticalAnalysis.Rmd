@@ -15,7 +15,6 @@ Reading files, mutations and filtering
 ```{r, results='hide'}
 AA_Cr <- read_csv("~/CHEM313_L4_SoilLab/data/AA_corrected.csv")
 ICPMS <- read_csv("~/CHEM313_L4_SoilLab/data/ICPMS_corrected.csv")
-
 ICPMS_ppm <- ICPMS %>% mutate(conc_blanked_ppm = conc_blanked*10^-3) %>% 
   mutate(conc_blanked_error_ppm = conc_blanked_error*10^-3) %>% 
   subset(select = -c(X, conc_blanked, conc_blanked_error, conc_unblanked, conc_unblanked_error))
@@ -28,14 +27,16 @@ Comparing ICPMS and AA Cr concentrations
 Cr_comp <- merge(ICPMS_Cr, AA_Cr2)
 
 Cr_site_avg <- Cr_comp %>% group_by(site) %>%
-  summarize(ICPMSavg = mean(conc_blanked_ppm), ICPMSsd = sd(conc_blanked_error_ppm), 
+  summarize(ICPMSavg = mean(conc_blanked_ppm), ICPMSsd = sd(conc_blanked_ppm), 
             length1 = length(conc_blanked_ppm), 
             ICPMS_95CI = qnorm(0.975)*ICPMSsd/sqrt(length1),
-            AAavg = mean(conc_blanked), AAsd = sd(conc_blanked_error),
-            length2 = length(conc_blanked), AA_95CI = qnorm(0.975)*AAsd/sqrt(length2)) %>% 
+            AAavg = mean(conc_blanked), 
+            AAsd = sd(conc_blanked),
+            length2 = length(conc_blanked), 
+            AA_95CI = qnorm(0.975)*AAsd/sqrt(length2)) %>% 
   subset(select = -c(length1, length2))
 
-Cr_site <- Cr_site_avg %>% mutate(perc_difference = ICPMSavg - AAavg/((ICPMSavg+AAavg)/2))
+Cr_site <- Cr_site_avg %>% mutate(perc_difference = 100*((ICPMSavg - AAavg)/((ICPMSavg+AAavg)/2)))
 Cr_site
 write.csv(Cr_site, file = "Cravgsite.csv", row.names = FALSE)
 ```
@@ -43,13 +44,13 @@ write.csv(Cr_site, file = "Cravgsite.csv", row.names = FALSE)
 Finding average metal concentrations
 ```{r}
 ICPMS_avg <- ICPMS_ppm %>% group_by(metal) %>% group_by(site, add = TRUE) %>%
-  summarize(avg = mean(conc_blanked_ppm), sd = sd(conc_blanked_error_ppm), 
+  summarize(avg = mean(conc_blanked_ppm), sd = sd(conc_blanked_ppm), 
             length1 = length(conc_blanked_ppm), 
             "95CI" = qnorm(0.975)*sd/sqrt(length1)) %>% 
   subset(select = -c(length1))
 
 ICPMS_avg
-write.csv(ICPMS_avg, file = "ICPMS.csv", row.names = FALSE)
+write.csv(ICPMS_avg, file = "ICPMSavg.csv", row.names = FALSE)
 ```
 
 Making QC data set and QC comparisons
@@ -64,7 +65,8 @@ ICPMS_QC <- filter(ICPMS_avg, site == "QC", metal != "As75")
 QC_comp <- merge(NIST, ICPMS_QC)
 QC_comp2 <- tibble(metal = QC_comp$metal, site = QC_comp$site, control_conc = QC_comp$conc, control_conc_e = QC_comp$conc_e, ICPMS_conc = QC_comp$avg, ICPMS_conc_e = QC_comp$sd, ICPMS_95CI = QC_comp$"95CI")
 
-QC_comp3 <- QC_comp2 %>% mutate(difference = abs(control_conc - ICPMS_conc)) %>% mutate(perc_error = 100*abs(difference)/control_conc)
+QC_comp3 <- QC_comp2 %>% mutate(difference = abs(control_conc - ICPMS_conc)) %>% 
+  mutate(perc_error = 100*abs(difference)/control_conc)
 
 QC_comp3
 write_csv(QC_comp3, file = "QC_ICPMSNIST.csv")
@@ -130,14 +132,14 @@ ttestunpaired <- function(unique_site) {
 }
 
 ttestpaired("A") #-1.9481 df=3 ttb=3.182
-ttestunpaired("B") #0.4453 df=4 ttb=2.776
+ttestpaired("B") #-2.2307 df=4 ttb=2.776
 ttestpaired("C") #-4.3031 df=4 ttb=2.776 significant
 ttestpaired("D") #-7.7403 df=2 ttb=4.303 significant
 ttestpaired("E") #-4.8498 df=1 ttb=12.71
 ttestpaired("F") #-2.6169 df=2 ttb=4.303
-ttestunpaired("QC") #-2.1954 df=11 ttb=2.201 significant
+ttestpaired("QC") #-4.8622 df=11 ttb=2.201 significant
 
-t <- c(1.9841, 0.4435, 4.3031, 7.7403, 4.8498, 2.6169, 2.1954)
+t <- c(1.9841, 2.2307, 4.3031, 7.7403, 4.8498, 2.6169, 4.8622)
 ttb <- c(3.182, 2.776, 2.776, 4.303, 12.71, 4.303, 2.201)
 CrFandt <- tibble(site = CrFtest2$site, df = CrFtest2$df, f_value = CrFtest2$f, f_table = CrFtest2$ftb, t_value = t, t_table = ttb)
 CrFandt
@@ -160,5 +162,59 @@ Ftestver2 <- function(unique_site) {
 #Ftestver2("E") 0.63252 df=1,1
 #Ftestver2("F") 0.41288 df=2,2
 #Ftestver2("QC") 0.74982 df=11,11 Ftb=2.69
-#produces different results
+#produces THE SAME RESULTS!!
 ```
+
+Graphs
+```{r}
+library(ggplot2)
+ICPMS_forgraph <- ICPMS_avg %>% filter(site != "QC", metal != "Cr53", 
+                                       metal != "Cd111")#, metal != "Pb208")
+gg1 <- ggplot(ICPMS_forgraph, 
+              aes(x = site, y = avg, color = metal, group = metal)) + 
+  geom_errorbar(aes(x=site, y=avg, ymin=avg-sd, ymax=avg+sd), 
+                width=.3, position=position_dodge(0.1)) + 
+  geom_point(position = position_dodge(0.1)) +
+  labs(x="site", y="concentration (ppm)")
+print(gg1)
+
+color1 <- c("ICPMS" = "tomato2", "AA" = "darkseagreen")
+
+Cr_forplot <- Cr_site_avg %>% select(site, ICPMSavg, AAavg) %>%
+  pivot_longer(., cols = c(ICPMSavg, AAavg), names_to = "var", values_to = "val")
+
+write_csv(Cr_forplot, file = "Crforplot.csv")
+Cr_forplot2 <- read_csv("~/CHEM313_L4_SoilLab/data/Cr_forplot_sd.csv")
+
+gg2 <- ggplot(Cr_forplot2, aes(x = site, y = val, col = var)) + 
+  geom_point(position = position_dodge(0.5)) +
+  labs(x="site", y="concentration (ppm)", color = "") +
+  geom_errorbar(aes(ymin = val-sd, 
+                    ymax = val+sd), width=0.3, 
+                position=position_dodge(0.5))
+
+print(gg2)
+```
+
+Grubbs test
+```{r}
+library(outliers)
+
+#grubbs for 6 observations is 1.887
+
+Cr_forgrubbs <- filter(ICPMS_avg, site != "QC", metal == "Cr52")
+grubbs.test(Cr_forgrubbs$avg) #1.7246, high 34 is not 
+As_forgrubbs <- filter(ICPMS_avg, site != "QC", metal == "As75")
+grubbs.test(As_forgrubbs$avg) #1.524, low 2.23 is not
+Cd_forgrubbs <- filter(ICPMS_avg, site != "QC", metal == "Cd114")
+grubbs.test(Cd_forgrubbs$avg) #1.417, low 0.1 is not
+Pb_forgrubbs <- filter(ICPMS_avg, site != "QC", metal == "Pb208")
+grubbs.test(Pb_forgrubbs$avg) #1.28, high 402 is not
+
+Cr_forgrubbsAA <- filter(Cr_site_avg, site != "QC")
+grubbs.test(Cr_forgrubbsAA$AAavg) #1.39468 high 26.4 is not
+
+```
+
+
+
